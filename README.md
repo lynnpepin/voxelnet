@@ -1,4 +1,13 @@
-# Voxelnet implemented in Tensorflow 2.0
+# Voxelnet implemented in just Tensorflow 2.0
+
+## TODOs
+
+1. From paper, specify details of model in-order.
+   (E.g. Partition specs  are described in 3.1., this will be the first item.) 
+
+2. ...
+
+## Description
 
 This is a project with the goal of re-implementing
 [VoxelNet (Zhou, Tuzel, 2018)](https://openaccess.thecvf.com/content_cvpr_2018/papers/Zhou_VoxelNet_End-to-End_Learning_CVPR_2018_paper.pdf).
@@ -12,21 +21,16 @@ Specifically, the goal is that this project:
 
 ## Motivation for this implementation
 
-Why yet-another-implementation of VoxelNet? This is because of a widespread
-problem of code-quality.
+I had too much difficulty using other implementations.
 
-So, secondary goals are to have these qualities:
+I want this implementation to:
 
-1. Functional: Prioritize functional approaches, making code properly modular.
-   (So, layers and models should be ready-to-import with no setup.)
-2. Documentation: Provide sphinx-RTD docstrings for usability and maintainability.
-   (So that each item is clear on how to use it, and so documentation can be built.)
-3. Reasonable defaults: As far as possible, functions / methods should have reasonable default arguments.
-   (To speed-up research and to implicitly provide useful examples.)
-4. Library-focused: This code should be a "flat library" rather than a "deep system".
-   (No arg-parsing, global state, etc. should have to worry you!)
-5. Transparency: Avoid dicts-as-arguments.
-   (Too many projects pass `config.py` or `params` throughout a script, making code re-use difficult.) 
+1. Emphasize code-quality,
+2. Use pure-Python + Tensorflow, minimizing extra dependencies,
+3. Prefer functional approaches
+4. Use reasonable default arguments to avoid parameter wrangling,
+5. Modularity, so this works more like a "flat library" rather than a "deep system",
+6. Parameter transparency: Avoid dicts-as-arguments. (No more `params` or `args` arguments!) 
 
 So, we want our code to look like this:
 
