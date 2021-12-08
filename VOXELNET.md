@@ -38,16 +38,39 @@ That is, in ASCII diagram form,
 --   ▀██▀   ▀██▀
 ```
 
+## 2. Feature learning network
 
-## 2. Partitioning (TODO)
+### 2.1. Partitioning, grouping, and sampling
 
-This step partitions points into the voxel grid.
+
+### 2.2. Stacked Voxel Feature Encoder
+
+#### 2.2.1. Voxel Feature Encoder Layer
+
+## 3. Convolutional Layers
+
+## 4. Region Proposal Network
+
+
+## 5. Loss
+
+---
+
+## 2. Differences between vehicle task and cyclist / pedestrian task
+
+Recall the step which partitions points into the voxel grid.
 
 The voxel grid corresponds to a range `(D, H, W)`, corresponding to axes `(z, y, x)`,
 with equal sized grid partitions `(v_D, v_H, v_W)`, leading to a total grid size of `(D/v_D, H/v_H, W/v_W)`,
 (also denoted `(D', H', W')`).
 
 Different partitioning parameters are used for different tasks. All units are in meters.
+
+TODO describe more partitioning, etc. details
+
+TODO reorganize, should be 'feature learning network' with Partitioning subsections.
+
+
 
 ### 2.1. Partitioning spec for Car Detection
 
@@ -79,14 +102,18 @@ Anchor sizes:
 - `l^a = 3.9`
 - `w^a = 1.6`
 - `h^a = 1.56`
+- Centered at `z^a_c = -1.0`,
+- with two rotations, `0` and `90` degrees. (See Fig 4.)
 
-Centered at `z^a_c = -1.0`, with two rotations, `0` and `90` degrees. (See Fig 4.)
 
+| IoU score            | Classification |
+| -------------------- | -------------- |
+| `IoU < 0.45`         | Negative       |
+| `0.45 <= IoU <= 0.6` | 'Don't care'   |
+| `0.6 < IoU`          | Positive       |
 
 An anchor is considered "positive" if it beats intersection-over-union (IoU) with ground truth,
 or if birds-eye view IoU is `> 0.60`. Anchors are "don't care" if `0.45 <= IoU <= 0.6`.
-
-
 
 The loss function (see below) uses `a = 1.5` and `b = 1`.
 
@@ -98,3 +125,45 @@ The loss function (see below) uses `a = 1.5` and `b = 1`.
 | Range  `(D, H, W)` 			 | `[-3, 1]`  | `[-20, 20]` | `[0, 70.4]`|
 | Voxel sizes `(v_D, v_H, v_W)`  | `0.4`      | `0.2`       | `0.2`      |
 | Grid size  `(D', H', W')`      | `10`       | `200`       | `240`      |
+
+
+They use maximum-sampling count `T = 45` per voxel.
+
+todo
+
+The network is then as follows, **identical to the car detection task in the previous section.**
+
+ 1. Two VFE layers:
+ 	1. `VFE-1(7,32)`
+ 	2. `VFE-2(32,128)`
+ 	3. Final FCN maps VFE-2 to `R^{128}`.
+ 2. So, feature learning set generates sparse tensor with shape `(128, 10, 400, 352)`.
+ 3. Then these layers:
+ 	1. `Conv3D(128, 64, 3, (2, 1, 1), (1, 1, 1))`
+ 	2. `Conv3D( 64, 64, 3, (1, 1, 1), (0, 1, 1))`
+ 	3. `Conv3D( 64, 64, 3, (2, 1, 1), (1, 1, 1))`
+ 4. Yielding a 4D tensor of size `(64, 2, 400, 352)`.
+ 5. Reshape to feature map of size `(128, 400, 352)`, corresponding to channel, height, width.
+
+The RPN has one modification to block 1 seen in Fig 4:
+The stride size in the first convolution is changed from 2 to 1.
+
+(This is for the small size of pedestrians.)
+
+Anchor sizes are different:
+
+- `l^a = 0.8`
+- `w^a = 0.6`
+- `h^a = 1.73`
+- Centered at `z^a_c = -0.6`,
+- with two rotations, `0` and `90` degrees. (See Fig 4.)
+
+
+| IoU score            | Classification |
+| -------------------- | -------------- |
+| `IoU < 0.45`         | Negative       |
+| `0.45 <= IoU <= 0.6` | 'Don't care'   |
+| `0.6 < IoU`          | Positive       |
+
+
+### todo more sections
