@@ -14,6 +14,10 @@
         - [ ] (Sparse tensor representation starts here)
     - [x] Augmenting voxel-cloud with offsets
     - [ ] VFE-n custom layers
+        - [x] Fully-connected component
+        - [ ] Elementwise maxpool
+        - [ ] Pointwise concatenation 
+        - [ ] VFE custom layer
     - [ ] VFE-out custom layer
 - [x] Convolutional middle layers:
     - [x] Convolutional middle block custom layer
