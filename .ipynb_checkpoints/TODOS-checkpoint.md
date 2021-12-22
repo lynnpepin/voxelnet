@@ -7,18 +7,18 @@
         - [ ] Perturbation
         - [ ] Global scaling
         - [ ] Global rotation
-- [ ] Feature learning network:
+- [~] Feature learning network:
     - [x] Partitioning points
     - [x] Grouping points into voxelgrid
     - [x] Sampling points within voxels
         - [ ] (Sparse tensor representation starts here)
     - [x] Augmenting voxel-cloud with offsets
-    - [ ] VFE-n custom layers
+    - [x] VFE-n custom layers
         - [x] Fully-connected component
         - [x] Elementwise maxpool
-        - [ ] Pointwise concatenation 
-        - [~] VFE custom layer
-    - [~] VFE-out custom layer
+        - [x] Pointwise concatenation 
+        - [x] VFE-n custom layer
+    - [x] VFE-out custom layer
 - [x] Convolutional middle layers:
     - [x] Convolutional middle block custom layer
     - [x] Convolutional middle layers
