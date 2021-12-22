@@ -18,7 +18,7 @@
         - [ ] Elementwise maxpool
         - [ ] Pointwise concatenation 
         - [ ] VFE custom layer
-    - [ ] VFE-out custom layer
+    - [~] VFE-out custom layer
 - [x] Convolutional middle layers:
     - [x] Convolutional middle block custom layer
     - [x] Convolutional middle layers
