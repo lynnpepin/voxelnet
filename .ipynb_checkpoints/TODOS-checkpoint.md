@@ -15,9 +15,9 @@
     - [x] Augmenting voxel-cloud with offsets
     - [ ] VFE-n custom layers
         - [x] Fully-connected component
-        - [ ] Elementwise maxpool
+        - [x] Elementwise maxpool
         - [ ] Pointwise concatenation 
-        - [ ] VFE custom layer
+        - [~] VFE custom layer
     - [~] VFE-out custom layer
 - [x] Convolutional middle layers:
     - [x] Convolutional middle block custom layer
@@ -40,14 +40,12 @@
 Progress since last week:
 
 Finished:
-    - partitioning
-    - grouping
-    - sampling
-    - augmenting
+    - Partitioning and grouping code
+    - Sampling code (naive sparse)
+    - Augment-in-sample
+    - VFE FCN, maxpool layer
+    - VFE-n neural network layer (tentative)
+    - VFE-out neural network layer (tentative)
 
-Progressed on:
-    - Sparse tensor representation
-    - Understanding of remaining tasks
-Understanding of:
-    - VFE
-    - Sparse representation as dense tenxor
+Work on approach:
+    - Sparse tensor representation with dense tensor
