@@ -1,11 +1,6 @@
-# Voxelnet implemented in just Tensorflow 2.0
+# Voxelnet 
 
-## TODOs
-
-1. From paper, specify details of model in-order.
-   (E.g. Partition specs  are described in 3.1., this will be the first item.) 
-
-2. ...
+This is not finished! This is an implementation of Voxelnet without CUDA dependencies. Just Tensorflow 2.0 Keras.
 
 ## Description
 
@@ -16,7 +11,7 @@ Specifically, the goal is that this project:
 
 1. Implements the novel layers and loss described in the paper,
 2. Builds a model from these layers,
-3. Trains and evaluates against KITTI dataset,
+3. Trains and evaluates against the relevant dataset,
 4. Provides pre-trained weights.
 
 ## Motivation for this implementation

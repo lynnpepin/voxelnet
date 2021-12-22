@@ -2,7 +2,7 @@
 
 
 - [ ] Data loading:
-    - [ ] Nuscenes data tools and prep
+    - [ ] KITTI data tools and prep
     - [ ] Data loader
 - [ ] Feature learning network:
     - [x] Partitioning points
