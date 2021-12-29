@@ -1,0 +1,4 @@
+*.pyc
+*pycache*
+*.zip
+*pretrained_models_v1.5*
