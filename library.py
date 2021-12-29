@@ -2,7 +2,9 @@
 
 A dumping ground for functions and networks we've defined.
 
-from library import pc
+from library import pc, quantize, sample_points, augment_pc_with_offsets
+from library import VFE_FCN, ElementwiseMaxpool, PointwiseConcat, VFE, VFE_out
+from library import ConvMiddleLayer, RPNConvBlock
 '''
 
 import math
@@ -26,7 +28,7 @@ with open('example_pc.bytes', 'rb') as ff:
 
 pc = np.array(list(struct.iter_unpack('f', pc_bytes))).reshape(-1, 4)
 
-#Voxel Feature Encoder functions
+#Part 1: Voxel Feature Encoder functions
 def quantize(x, a = - 3, b = 1, v = 0.4):
     '''Given a floating value x, quantize its value within
     range [a, b] with spacing v.
@@ -174,7 +176,179 @@ def augment_pc_with_offsets(voxelgrid):
     # Operates in-place! Return is only for convenience.
     return voxelgrid
 
-# Convolutional middle layers
+#Part 1.2. VFE neural layers
+class VFE_FCN(keras.layers.Layer):
+    '''The fully-connected layer used for the VFE.
+    
+    :param CC: Dimension of input
+    :type CC: int
+    :param name: Suffix of names to be given to layers
+    :type name: str
+    '''
+    def __init__(self, units = 32, name = "VFE_FCN"):
+        super(VFE_FCN, self).__init__(name=name)
+        
+        self.linear = keras.layers.Dense(units, name = f"{name}_linear")
+        self.bn = keras.layers.BatchNormalization(name = f"{name}_bn")
+        self.relu = keras.layers.ReLU(name = f"{name}_fcn")
+    
+    def call(self, xx):
+        '''
+        :param xx: Input tensor
+        :type xx: Tensor
+        '''
+        # TODO: tflow can't autograph this. report on github
+        return self.relu(self.bn(self.linear(xx)))
+
+class ElementwiseMaxpool(keras.layers.Layer):
+    '''
+    :param axis: Axis to maxpool over
+    :type axis: int
+    :param keepdims: If true, reduced axes are not deleted.
+    E.g. (3, 3, 35) over axis 2 becomes (3, 3, 1).
+    :type keepdims: bool
+    :param name: Suffix of names to be given to layers
+    :type name: str
+    '''
+    def __init__(self, axis = 3, keepdims = True, name = "VFE_ElementwiseMaxpool"):
+        super(ElementwiseMaxpool, self).__init__(name=name)
+        self.axis = axis
+        self.keepdims = keepdims
+        
+    def call(self, xx):
+        '''
+        :param xx: Input tensor to be maxpooled
+        :type xx: Tensor
+        :return: Output tensor after maxpooling operation
+        :rtype: Tensor
+        '''
+        return tf.reduce_max(xx, axis = self.axis, keepdims = self.keepdims)
+
+class PointwiseConcat(keras.layers.Layer):
+    '''Given two inputs, broadcast the second over a given axis to match 
+    the first, and then concatenate them.
+    
+    :param axis: Axis to repeat over
+    :type axis: int
+    :param expand_dims: If True, expand at the axis on the second input.
+        Use False if the axis is already there (shape 1).
+    :type expand_dims: bool
+    :param name: Suffix of names to be given to layers
+    :type name: str
+    '''
+    def __init__(self, axis = 4, expand_dims = False, name = "pointwise_concat_"):
+        super(PointwiseConcat, self).__init__(name=name)
+        self.axis = axis
+        self.expand_dims = expand_dims
+        
+    def call(self, xx):
+        '''
+        :param xx: Input tensor
+        :type xx: Tensor
+        '''
+        # 1. make sure shape makes sense
+        X1 = xx[0] # pointwise
+        X2 = xx[1] # aggregate
+        
+        if self.expand_dims:
+            assert len(X1.shape) == len(X2.shape) + 1
+        else:
+            assert len(X1.shape) == len(X2.shape)
+        
+        # 2. Get num to repeat
+        num_to_repeat = X1.shape[self.axis]
+        
+        # 3. expand_dims, repeat,
+        if self.expand_dims:
+            X2_wip = tf.expand_dims(X2, axis = self.axis)
+        
+        X2_wip = tf.repeat(X2, num_to_repeat, axis = self.axis)
+        #todo: assert fails even though both are equal.
+        #debug later...
+        #assert X2_wip.shape == X1.shape, f"{X2_wip.shape} != {X1.shape}"
+        
+        return tf.concat([X1, X2_wip], axis = -1)
+
+class VFE(keras.layers.Layer):
+    '''
+    :param cin: Dimensionality of input points
+    :type cin: int
+    :param cout:  Dimension of output
+    :type cout: int  
+    :param cout: Max number of points in voxel, needed for repeat
+    :type cout: int  
+    :param name: Suffix of names to be given to layers
+    :type name: str  
+    '''
+    def __init__(
+        self,
+        cin = 7,
+        cout = 32,
+        T = 35,
+        name = "VFE"
+    ):
+        super(VFE, self).__init__(name=name)
+        self.fcn = VFE_FCN(units = cout//2, name = f"{name}_fcn")
+        self.elementwise_maxpool = ElementwiseMaxpool(
+            axis = 4,
+            keepdims = True,
+            name = f"{name}_elementwise_maxpool"
+        )
+        self.pointwise_concat = PointwiseConcat(
+            axis = 4,
+            name = f"{name}_pointwise_concat"
+        )
+        
+    def call(
+        self,
+        xx
+    ):
+        '''
+        :param xx: Input tensor
+        :type xx: Tensor
+        
+        :return: Output of layer
+        :rtype: Tensor
+        '''
+        pointwise_features = self.fcn(xx)
+        aggregate_features = self.elementwise_maxpool(pointwise_features)
+        
+        return self.pointwise_concat([pointwise_features, aggregate_features])
+
+class VFE_out(keras.layers.Layer):
+    '''Connects VFE-n layer to the convolutional middle layers.
+    
+    :param CC: Dimension of input
+    :type CC: int
+    :param axis: Axis to maxpool over
+    :type axis: int
+    :param name: Suffix of names to be given to layers
+    :type name: str
+    '''
+    def __init__(self, CC = 128, axis = 3, name = "VFE_out"):
+        super(VFE_out, self).__init__(name=name)
+        
+        self.fcn = VFE_FCN(units=CC, name = f"{name}_fcn")
+        self.elementwise_maxpool = ElementwiseMaxpool(
+            axis = 4,
+            keepdims = False,
+            name = f"{name}_elementwise_maxpool"
+        )
+    
+    def call(self, xx):
+        '''
+        :param xx: Input tensor
+        :type xx: Tensor
+        
+        
+        :return: Output of layer
+        :rtype: Tensor
+        '''
+        return self.elementwise_maxpool(self.fcn(xx))
+
+
+
+#Part 2. Convolutional middle layers
 class ConvMiddleLayer(keras.layers.Layer):
     '''
     See section 2.1.2 "Convolutional Middle Layers" of the VoxelNet paper.
@@ -321,13 +495,14 @@ class ConvMiddleLayer(keras.layers.Layer):
         if not tf_input.shape[-1] == self.c_in:
             print(f"Warning, {self.name} expected input with {self.c_in} channels, got {tf_input.shape[-1]} instead.")
         
-        h1 = self.pad_layer(tf_input)
+        conved = self.conv_layer(tf_input)
+        h1 = self.pad_layer(conved)
         h2 = self.batchnorm_layer(h1)
         h3 = self.relu_layer(h2)
         
         return h3
 
-# RPN block
+#3. RPN block
 class RPNConvBlock(keras.layers.Layer):
     '''
     See section 2.1.3 "Convolutional Middle Layers" of the VoxelNet paper.
