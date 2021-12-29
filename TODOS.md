@@ -11,7 +11,7 @@
     - [x] Partitioning points
     - [x] Grouping points into voxelgrid
     - [x] Sampling points within voxels
-        - [ ] (Sparse tensor representation starts here)
+        - [~] (Sparse tensor representation starts here)
     - [x] Augmenting voxel-cloud with offsets
     - [x] VFE-n custom layers
         - [x] Fully-connected component
@@ -25,16 +25,16 @@
 - [x] Region proposal network:
     - [x] RPN Convolutional Block custom layer
     - [x] RPN network
-- [ ] Loss function:
+- [~] Loss function:
     - [ ] SmoothL1 loss function
     - [ ] Loss anchors
     - [ ] Loss custom layer
 - [ ] Training
 - [ ] Optimizations
-    - [ ] Sparse tensor representation
+    - [~] Sparse tensor representation
     - [ ] Sparse operations over tensors
-- [ ] Fit CARLA lidar to Nuscenes specifications
-- [ ] Integrate into CARLA
+- [~] Fit CARLA lidar to KITTI specifications
+- [~] Integrate into CARLA
 
 
 Progress since last week:
