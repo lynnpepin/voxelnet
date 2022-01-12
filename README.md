@@ -1,11 +1,10 @@
-# Voxelnet 
+# Voxelnet (defunct)
 
-This is not finished! This is an implementation of Voxelnet without CUDA dependencies. Just Tensorflow 2.0 Keras.
-
-## Description
 
 This is a project with the goal of re-implementing
 [VoxelNet (Zhou, Tuzel, 2018)](https://openaccess.thecvf.com/content_cvpr_2018/papers/Zhou_VoxelNet_End-to-End_Learning_CVPR_2018_paper.pdf).
+
+This is not finished! This is an implementation of Voxelnet without CUDA dependencies. Just Tensorflow 2.0 Keras.
 
 Specifically, the goal is that this project:
 
@@ -16,9 +15,9 @@ Specifically, the goal is that this project:
 
 ## Motivation for this implementation
 
-I had too much difficulty using other implementations.
+I had too much difficulty using other codesets and implementations. A lot of them share the same 'lineage' and so I wanted to start a new lineage that I found easier to use.
 
-I want this implementation to:
+I wanted this implementation to:
 
 1. Emphasize code-quality,
 2. Use pure-Python + Tensorflow, minimizing extra dependencies,
@@ -31,7 +30,9 @@ So, we want our code to look like this:
 
 ## Architecture
 
-TODO-- document structure of this project
+- The `notebooks` provides examples and whatnot as I worked through implementation details. This includes unfinished parts and notes.
+- The `library.py` provides every function and Keras layer we use in this project.
+- The `model.py` provides an instantiation of the model using the layers in `library.py`.
 
 ## License
 

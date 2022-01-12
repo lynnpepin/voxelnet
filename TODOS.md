@@ -1,5 +1,8 @@
 # Big List Of TODOS
 
+This summarises how far along the project is. The markings `[ ]`, `[~]`, and `[x]` denote an incomplete, partially complete, and completed task, respectively.
+
+
 
 - [ ] Data loading:
     - [ ] KITTI data tools and prep
@@ -11,7 +14,7 @@
     - [x] Partitioning points
     - [x] Grouping points into voxelgrid
     - [x] Sampling points within voxels
-        - [~] (Sparse tensor representation starts here)
+        - [~] (Sparse tensor representation using hash)
     - [x] Augmenting voxel-cloud with offsets
     - [x] VFE-n custom layers
         - [x] Fully-connected component
@@ -35,17 +38,3 @@
     - [ ] Sparse operations over tensors
 - [~] Fit CARLA lidar to KITTI specifications
 - [~] Integrate into CARLA
-
-
-Progress since last week:
-
-Finished:
-    - Partitioning and grouping code
-    - Sampling code (naive sparse)
-    - Augment-in-sample
-    - VFE FCN, maxpool layer
-    - VFE-n neural network layer (tentative)
-    - VFE-out neural network layer (tentative)
-
-Work on approach:
-    - Sparse tensor representation with dense tensor

@@ -41,8 +41,7 @@ ravel_multi_index(
     Flatten an index for a given range
 
 
-
-VFE_FCN, ElementwiseMaxpool, PointwiseConcat, VFE, VFE_out, ConvMiddleLayer, RPNConvBlock
+And the layers: VFE_FCN, ElementwiseMaxpool, PointwiseConcat, VFE, VFE_out, ConvMiddleLayer, RPNConvBlock
 
 
 Quick import:
