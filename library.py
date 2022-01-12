@@ -2,7 +2,53 @@
 
 A dumping ground for functions and networks we've defined.
 
+List:
+
+pc
+    Numpy array with shape (*, 4). Sample pointcloud
+
+quantize(x, a = - 3, b = 1, v = 0.4)
+    Given a floating value x, quantize its value within
+        range [a, b] with spacing v.
+
+sample_points(
+    pointcloud,
+    D = [-3, 1], H = [-40, 40],  W = [0, 70.4], T = 35,
+    vD = 0.4, vH = 0.2, vW = 0.2,
+    flip_xyz = True, room_for_augmentation = True
+)
+    Given a pointcloud (i.e. array of (n, 4)  points)
+        and quantization parameters D, H, W, T, vD, vH, vW,
+        1. quantize according to the parameters D, H, W, vD, vH, vW,
+        2. sample per-cell according to T, and
+        3. Augment by adding the offset features (point - offset from mean)
+        return the (D, H, W, T, 7) array of selected points.
+
+augment_pc_with_offsets(voxelgrid):
+    Given a voxel from sample_points(...),
+    we want to augment each point in each cell
+    with (z - z_mean, y - y_mean, x - x_mean),
+    i.e. the offset from the centroid of the cell.
+    Operates IN PLACE.
+
+equi_hash(n, a = 0.618033988749895, K = 131072)
+    Hash integer n to range [0, K) using Equidistribution Theorem Hash, using irrational a.
+
+ravel_multi_index(
+    index = (0, 0, 0),
+    shape = (10, 400, 352)
+):
+    Flatten an index for a given range
+
+
+
+VFE_FCN, ElementwiseMaxpool, PointwiseConcat, VFE, VFE_out, ConvMiddleLayer, RPNConvBlock
+
+
+Quick import:
+
 from library import pc, quantize, sample_points, augment_pc_with_offsets
+from library import equi_hash, ravel_multi_index
 from library import VFE_FCN, ElementwiseMaxpool, PointwiseConcat, VFE, VFE_out
 from library import ConvMiddleLayer, RPNConvBlock
 '''
@@ -175,6 +221,46 @@ def augment_pc_with_offsets(voxelgrid):
     
     # Operates in-place! Return is only for convenience.
     return voxelgrid
+
+def equi_hash(n, a = 0.618033988749895, K = 131072):
+    """Hash integer n to range [0, K) using Equidistribution Theorem Hash, using irrational a.
+
+    Is optimal for a = Phi = 1.618034.
+    Because of mod 1, we use 0.618034.
+
+    :param n: Input to hash
+    :type n: int
+    :param a: Irrational number, defaults to 0.618033988749895
+    :type a: float, optional
+    :param K: [description], defaults to 131072
+    :type K: int, optional
+
+    :return: Result of the hash: An int in range [0, K)
+    :rtype: int
+    """
+    return math.floor(((n * a) % 1)*K)
+
+def ravel_multi_index(
+    index = (0, 0, 0),
+    shape = (10, 400, 352)
+):
+    """Flatten an index for a given range
+
+    :param index: Multi-axis index, defaults to (0, 0, 0)
+    :type index: tuple, optional
+    :param shape: Range of the index, defaults to (10, 400, 352)
+    :type shape: tuple, optional
+    :return: Flat index for the given shape
+    :rtype: int
+    """
+    assert len(index) == len(shape)
+    flat_index = 0
+    for axis in range(len(index)):
+        flat_index = flat_index * shape[axis]
+        flat_index = flat_index + index[axis]
+    
+    return flat_index
+
 
 #Part 1.2. VFE neural layers
 class VFE_FCN(keras.layers.Layer):
